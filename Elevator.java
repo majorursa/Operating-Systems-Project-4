@@ -1,3 +1,5 @@
+import java.util.*;
+
 /**
  * Elevator is a scheduling class
  *   attempt 1: Use simple FIFO queue to schedule IO operations
@@ -5,22 +7,44 @@
  *      emulate hard disk arm, by scheduling IO requests in one direction at a time
  *      ie schedule only increasing block numbers until there are no more increasing,
  *      then switch direction and schedule only in deacreasing order.
- * @author <a href="mailto:bart@seamus-laptop">Bart Lantz</a>
+ * @author <a href="mailto:bartlantz@gmail.com">Bart Lantz</a>
  * @version 1.0
  */
 public class Elevator {
     private Disk disk;
-    private 
+    // PriorityQueue or ArrayList or LinkedList
+    private Queue<Request> rQueue;
+    Request current;
     public Elevator(Disk d) {
         disk = d;
+        rQueue = new LinkedList<Request>();
     }
 
-    public int read() {
+    public int read(int blockNum, byte[] data) {
+        Request r = new Request(blockNum, data, true);
+        rQueue.add(r);
+        checkCurrent();
+        return 0;
     }
 
-    public int write() {
+    public int write(int blockNum, byte[] data) {
+        Request r = new Request(blockNum, data, false);
+        rQueue.add(r);
+        checkCurrent();
+        return 0;
     }
 
+    /**
+     * Starts next request if no current running IO request
+     *
+     */
+    private void checkCurrent() {
+        // if no current request, we must start up queue
+        if (current == null) {
+            nextRequest();
+        }
+    }
+    
     /**
      * endIO is called when Disk finishes an IO Request
      *
@@ -28,10 +52,30 @@ public class Elevator {
      */
     public int endIO() {
         // this is called when the Disk finishes an IO Request
-        nextRequest();  
+        nextRequest();
+        return 0;
     }
     public int nextRequest() {
-        
+        //current = (Request) rQueue.remove();
+        current = rQueue.remove();
+        int blockNum = current.getBlocks();
+        byte[] data = current.getData();
+        if (current != null) {
+            if (current.getReadRequest() == true) {
+                disk.beginRead(blockNum, data);
+            } else {
+                disk.beginWrite(blockNum, data);
+            }
+            // wait until next interrupt
+            try {
+                this.wait();
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }
+        }
+        return 0;
     }
+    
 }
+
 
