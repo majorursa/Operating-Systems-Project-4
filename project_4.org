@@ -1,0 +1,15 @@
+* Sys Calls to Implement
+** DONE getTime
+   CLOSED: [2011-11-27 Sun 20:03]
+** DONE getDiskBlockCount
+   CLOSED: [2011-12-03 Sat 12:44]
+** DONE getDiskBlockSize
+   CLOSED: [2011-12-03 Sat 12:44]
+** TODO readDiskBlock
+** TODO writeDiskBlock
+* Sys Calls
+** blocking
+The calling process blocks until operation completes.  Disk has only
+non-blocking methods beginRead() and beginWrite().
+** return 0 on success, non-zero on error
+** 
