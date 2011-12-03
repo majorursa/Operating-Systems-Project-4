@@ -232,6 +232,12 @@ public class Kernel {
                 case SYSCALL_GET_BLOCK_COUNT:
                     return doGetDiskBlockCount();
 
+                case SYSCALL_READ_DISK_BLOCK:
+                    return doReadDiskBlock(i2,(byte[])o1);
+
+                case SYSCALL_WRITE_DISK_BLOCK:
+                    return doWriteDiskBlock(i1,(byte[])o1);
+                 
                 default:
                     return ERROR_BAD_ARGUMENT;
                 }
@@ -411,6 +417,26 @@ public class Kernel {
     private static int doGetDiskBlockCount() {
         return disk.DISK_SIZE;
     } // doGetDiskBlockCount
+
+    /** Reads block into byte[] data
+     *   
+     * @param blockNumber: the address of the block on Disk
+     * @param data: an initialized byte array, where block will be stored
+     * @return an <code>int</code> value
+     */
+    private static int doReadDiskBlock(int blockNumber,byte[] data) {
+        return blockNumber;
+    } // doReadDiskBlock
+
+    /** Writes byte[] data into Block with address blockNumber on disk
+     *   
+     * @param blockNumber: the address of the block on Disk
+     * @param data: an initialized byte array, that will be written to disk
+     * @return an <code>int</code> value
+     */
+    private static int doWriteDiskBlock(int blockNumber,byte[] data) {
+        return blockNumber;
+    } // doWriteDiskBlock
 
     /** A Launcher instance represents one atomic command being run by the
      * Kernel.  It has associated with it a process id (pid), a Java method
