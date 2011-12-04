@@ -114,4 +114,19 @@ public class Library {
                                  Kernel.SYSCALL_GET_BLOCK_COUNT,0,null,null,null);
         return count;
     }
+
+    public static int writeDiskBlock(int blockNum, byte[] data) {
+        int err;
+        err = Kernel.interrupt(Kernel.INTERRUPT_USER,
+                                 Kernel.SYSCALL_WRITE_DISK_BLOCK,blockNum,data,null,null);
+        return err;
+    }
+
+    public static int readDiskBlock(int blockNum, byte[] data) {
+        int err;
+        err = Kernel.interrupt(Kernel.INTERRUPT_USER,
+                                 Kernel.SYSCALL_READ_DISK_BLOCK,blockNum,data,null,null);
+        return err;
+    }
+
 } // Library
