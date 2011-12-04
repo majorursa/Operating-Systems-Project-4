@@ -239,13 +239,14 @@ public class Kernel {
                     return doReadDiskBlock(i2,(byte[])o1);
 
                 case SYSCALL_WRITE_DISK_BLOCK:
-                    return doWriteDiskBlock(i1,(byte[])o1);
+                    return doWriteDiskBlock(i2,(byte[])o1);
                  
                 default:
                     return ERROR_BAD_ARGUMENT;
                 }
 
             case INTERRUPT_DISK:
+                elev.endIO();
                 break;
 
             case INTERRUPT_POWER_ON:
