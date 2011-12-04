@@ -14,25 +14,53 @@ public class Elevator {
     private static Disk disk;
     // PriorityQueue or ArrayList or LinkedList
     private Queue<Request> rQueue;
+    private boolean diskIsBusy;
     Request current;
     public Elevator(Disk d) {
         disk = d;
         //rQueue = new LinkedList<Request>();
         rQueue = new LinkedList<Request>();
+        diskIsBusy = false;
     }
 
     public int read(int blockNum, byte[] data) {
         Request r = new Request(blockNum, data, true);
+        // boolean gotDisk = false;
+        // if (!diskIsBusy) {
+        //     synchronized(this) {
+        //         if (!diskIsBusy) {
+        //             diskIsBusy = true;
+        //             gotDisk = true;
+        //         } else {
+        //             rQueue.add(r);
+        //         }
+        //     }
+        // } else {
+        //     synchronized(this) {
+        //         rQueue.add(r);
+        //     }
+        // }
+        // if (gotDisk) {
+        //     disk.beginRead(blockNum,data);
+        // }
+
         synchronized(this) {
             rQueue.add(r);
         }
         checkCurrent();
-        try {
-            wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        // keep checking to see if finished
+
+        synchronized(this) {
+            while (!r.getFinished()) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        disk.beginRead(blockNum,data);
+        // I run this in nextRequest
+        //disk.beginRead(blockNum,data);
         return 0;
     }
 
@@ -42,14 +70,15 @@ public class Elevator {
             rQueue.add(r);
         }
         checkCurrent();
-        while (!r.getFinished()) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        synchronized (this) {
+            while (!r.getFinished()) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        //disk.beginWrite(blockNum,data);
         return 0;
     }
 
@@ -73,20 +102,27 @@ public class Elevator {
     public int endIO() {
         // this is called when the Disk finishes an IO Request
         // notify waiting threads so they can check if their IO request has finished.
-        notifyAll();
+        Library.output("in endIO.\n");
+        synchronized(this) {
+            this.notifyAll();
+        }
         // fire off next IO request to Disk
         nextRequest();
+        Library.output("leaving endIO.\n");        
+
         return 0;
     }
     public int nextRequest() {
-        //current = (Request) rQueue.remove();
-        current = rQueue.remove();
-        int blockNum = current.getBlocks();
-        byte[] data = current.getData();
+        current = (Request) rQueue.poll();
         if (current != null) {
+            Library.output("In nextRequest: " + current.getBlocks() + ".\n");
+            int blockNum = current.getBlocks();
+            byte[] data = current.getData();
             if (current.getReadRequest() == true) {
+                Library.output("disk begin read\n");
                 disk.beginRead(blockNum, data);
             } else {
+                Library.output("disk begin write\n");
                 disk.beginWrite(blockNum, data);
             }
             // wait until next interrupt
@@ -97,6 +133,7 @@ public class Elevator {
             // }
 
             // set this request's flag to finished
+            Library.output("setting current to finished.\n");
             current.setFinished();
         }
         return 0;
