@@ -11,7 +11,7 @@ import java.util.*;
  * @version 1.0
  */
 public class Elevator {
-    private Disk disk;
+    private static Disk disk;
     // PriorityQueue or ArrayList or LinkedList
     private Queue<Request> rQueue;
     Request current;
@@ -24,6 +24,12 @@ public class Elevator {
         Request r = new Request(blockNum, data, true);
         rQueue.add(r);
         checkCurrent();
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        disk.beginRead(blockNum,data);
         return 0;
     }
 
@@ -31,6 +37,12 @@ public class Elevator {
         Request r = new Request(blockNum, data, false);
         rQueue.add(r);
         checkCurrent();
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        disk.beginWrite(blockNum,data);
         return 0;
     }
 
@@ -41,7 +53,8 @@ public class Elevator {
     private void checkCurrent() {
         // if no current request, we must start up queue
         if (current == null) {
-            nextRequest();
+            //nextRequest();
+            endIO();
         }
     }
     
@@ -52,7 +65,8 @@ public class Elevator {
      */
     public int endIO() {
         // this is called when the Disk finishes an IO Request
-        nextRequest();
+        // nextRequest();
+        notifyAll();
         return 0;
     }
     public int nextRequest() {
