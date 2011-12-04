@@ -426,20 +426,22 @@ public class Kernel {
      *   
      * @param blockNumber: the address of the block on Disk
      * @param data: an initialized byte array, where block will be stored
-     * @return an <code>int</code> value
+     * @return on success return 0, else return error code
      */
     private static int doReadDiskBlock(int blockNumber,byte[] data) {
-        return blockNumber;
+        elev.read(blockNumber,data);
+        return 0;
     } // doReadDiskBlock
 
     /** Writes byte[] data into Block with address blockNumber on disk
      *   
      * @param blockNumber: the address of the block on Disk
      * @param data: an initialized byte array, that will be written to disk
-     * @return an <code>int</code> value
+     * @return on success return 0, else return error code
      */
     private static int doWriteDiskBlock(int blockNumber,byte[] data) {
-        return blockNumber;
+        elev.write(blockNumber,data);
+        return 0;
     } // doWriteDiskBlock
 
     /** A Launcher instance represents one atomic command being run by the
