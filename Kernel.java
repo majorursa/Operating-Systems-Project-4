@@ -160,6 +160,9 @@ public class Kernel {
     /** The size of the disk cache */
     private static int cacheSize;
 
+    /** Elevator monitor to keep track of requests */
+    private static Elevator elev;
+
     //////////////// Methods
 
     /** This is the only entry into the kernel.
@@ -275,7 +278,8 @@ public class Kernel {
         doOutput("Kernel: Disk is " + disk.DISK_SIZE + " blocks\n");
         doOutput("Kernel: Disk cache size is " + i1 + " blocks\n");
         doOutput("Kernel: Loading initial program.\n");
-
+        
+        elev =  new Elevator(disk); 
         StringTokenizer st = new StringTokenizer(shellCommand);
         int n = st.countTokens();
         if (n < 1) {
