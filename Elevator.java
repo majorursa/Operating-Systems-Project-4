@@ -17,12 +17,15 @@ public class Elevator {
     Request current;
     public Elevator(Disk d) {
         disk = d;
+        //rQueue = new LinkedList<Request>();
         rQueue = new LinkedList<Request>();
     }
 
     public int read(int blockNum, byte[] data) {
         Request r = new Request(blockNum, data, true);
-        rQueue.add(r);
+        synchronized(this) {
+            rQueue.add(r);
+        }
         checkCurrent();
         try {
             wait();
@@ -35,14 +38,18 @@ public class Elevator {
 
     public int write(int blockNum, byte[] data) {
         Request r = new Request(blockNum, data, false);
-        rQueue.add(r);
-        checkCurrent();
-        try {
-            wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        synchronized(this) {
+            rQueue.add(r);
         }
-        disk.beginWrite(blockNum,data);
+        checkCurrent();
+        while (!r.getFinished()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        //disk.beginWrite(blockNum,data);
         return 0;
     }
 
@@ -65,8 +72,10 @@ public class Elevator {
      */
     public int endIO() {
         // this is called when the Disk finishes an IO Request
-        // nextRequest();
+        // notify waiting threads so they can check if their IO request has finished.
         notifyAll();
+        // fire off next IO request to Disk
+        nextRequest();
         return 0;
     }
     public int nextRequest() {
@@ -81,11 +90,14 @@ public class Elevator {
                 disk.beginWrite(blockNum, data);
             }
             // wait until next interrupt
-            try {
-                this.wait();
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
-            }
+            // try {
+            //     this.wait();
+            // } catch (InterruptedException ie) {
+            //     ie.printStackTrace();
+            // }
+
+            // set this request's flag to finished
+            current.setFinished();
         }
         return 0;
     }
